@@ -1,0 +1,396 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.ecg_monitor.MainActivity">
+    <!--1024x768  160PPI 8英寸 -->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <!-- 曲线区域 -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@color/colorAccent"
+            android:orientation="vertical">
+
+            <SurfaceView
+                android:layout_width="match_parent"
+                android:layout_height="175dp" />
+
+            <SurfaceView
+                android:layout_width="match_parent"
+                android:layout_height="175dp" />
+
+            <SurfaceView
+                android:layout_width="match_parent"
+                android:layout_height="175dp" />
+
+            <SurfaceView
+                android:layout_width="match_parent"
+                android:layout_height="175dp" />
+
+            <SurfaceView
+                android:layout_width="match_parent"
+                android:layout_height="175dp" />
+        </LinearLayout>
+
+        <!-- 值区域 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#fff"
+            android:baselineAligned="false"
+            android:orientation="vertical">
+
+            <!--体温-->
+            <LinearLayout
+                android:layout_width="370dp"
+                android:layout_height="175dp"
+                android:background="@color/colorPrimary"
+                android:orientation="vertical"
+                android:padding="10dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="心电(bpm)"
+                        android:textColor="#FFFFFF"
+                        android:textSize="25sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_weight="0.1"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/txt_ecg_high"
+                            style="@style/main_txt_limit"
+                            android:text="38"
+                            android:textColor="#FFFFFF" />
+
+                        <TextView
+                            android:id="@+id/txt_ecg_low"
+                            style="@style/main_txt_limit"
+                            android:text="36"
+                            android:textColor="#FFFFFF" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/txt_ecg"
+                        style="@style/main_txt_value"
+                        android:ems="1"
+                        android:text="--"
+                        android:textColor="#FFFFFF"
+                        android:textSize="40sp" />
+
+                </LinearLayout>
+
+
+            </LinearLayout>
+            <!--体温-->
+            <LinearLayout
+                android:layout_width="370dp"
+                android:layout_height="175dp"
+                android:layout_marginTop="1dp"
+                android:background="@color/colorPrimaryDark"
+                android:orientation="vertical"
+                android:padding="10dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="血压(mmHg)"
+                    android:textColor="#FFFFFF"
+                    android:textSize="25sp" />
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_weight="0.3"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <TextView
+                            style="@style/main_txt_limit"
+                            android:text="38"
+                            android:textColor="#FFFFFF" />
+
+                        <TextView
+                            style="@style/main_txt_limit"
+                            android:text="36"
+                            android:textColor="#FFFFFF" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/txt_temp1"
+                        style="@style/main_txt_value"
+                        android:ems="1"
+                        android:text="--"
+                        android:textColor="#FFFFFF"
+                        android:textSize="40sp" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_weight="0.3"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/txt_temp_high"
+                            style="@style/main_txt_limit"
+                            android:text="38"
+                            android:textColor="#FFFFFF" />
+
+                        <TextView
+                            android:id="@+id/txt_temp_low"
+                            style="@style/main_txt_limit"
+                            android:text="36"
+                            android:textColor="#FFFFFF" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/txt_temp2"
+                        style="@style/main_txt_value"
+                        android:ems="1"
+                        android:text="--"
+                        android:textColor="#FFFFFF"
+                        android:textSize="40sp" />
+
+                </LinearLayout>
+
+
+            </LinearLayout>
+            <!--体温-->
+            <LinearLayout
+                android:layout_width="370dp"
+                android:layout_height="175dp"
+                android:layout_marginTop="1dp"
+                android:background="@color/colorPrimaryDark"
+                android:orientation="vertical"
+                android:padding="10dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="血氧(%)"
+                        android:textColor="#FFFFFF"
+                        android:textSize="25sp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="脉率(bpm)"
+                        android:textColor="#FFFFFF"
+                        android:textSize="25sp" />
+                </LinearLayout>
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_weight="0.3"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <TextView
+                            style="@style/main_txt_limit"
+                            android:text="38"
+                            android:textColor="#FFFFFF" />
+
+                        <TextView
+                            style="@style/main_txt_limit"
+                            android:text="36"
+                            android:textColor="#FFFFFF" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/txt_temp1"
+                        style="@style/main_txt_value"
+                        android:ems="1"
+                        android:text="--"
+                        android:textColor="#FFFFFF"
+                        android:textSize="40sp" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_weight="0.3"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/txt_temp_high"
+                            style="@style/main_txt_limit"
+                            android:text="38"
+                            android:textColor="#FFFFFF" />
+
+                        <TextView
+                            android:id="@+id/txt_temp_low"
+                            style="@style/main_txt_limit"
+                            android:text="36"
+                            android:textColor="#FFFFFF" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/txt_temp2"
+                        style="@style/main_txt_value"
+                        android:ems="1"
+                        android:text="--"
+                        android:textColor="#FFFFFF"
+                        android:textSize="40sp" />
+
+                </LinearLayout>
+
+
+            </LinearLayout>
+            <!--体温-->
+            <LinearLayout
+                android:layout_width="370dp"
+                android:layout_height="175dp"
+                android:layout_marginTop="1dp"
+                android:background="@color/colorPrimaryDark"
+                android:orientation="vertical"
+                android:padding="10dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="呼吸(bpm)"
+                        android:textColor="#FFFFFF"
+                        android:textSize="25sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="57dp"
+                        android:text="体温(℃)"
+                        android:textColor="#FFFFFF"
+                        android:textSize="25sp" />
+                </LinearLayout>
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_weight="0.3"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <TextView
+                            style="@style/main_txt_limit"
+                            android:text="38"
+                            android:textColor="#FFFFFF" />
+
+                        <TextView
+                            style="@style/main_txt_limit"
+                            android:text="36"
+                            android:textColor="#FFFFFF" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/txt_temp1"
+                        style="@style/main_txt_value"
+                        android:ems="1"
+                        android:text="--"
+                        android:textColor="#FFFFFF"
+                        android:textSize="40sp" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_weight="0.3"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/txt_temp_high"
+                            style="@style/main_txt_limit"
+                            android:text="38"
+                            android:textColor="#FFFFFF" />
+
+                        <TextView
+                            android:id="@+id/txt_temp_low"
+                            style="@style/main_txt_limit"
+                            android:text="36"
+                            android:textColor="#FFFFFF" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/txt_temp2"
+                        style="@style/main_txt_value"
+                        android:ems="1"
+                        android:text="--"
+                        android:textColor="#FFFFFF"
+                        android:textSize="40sp" />
+
+                </LinearLayout>
+
+
+            </LinearLayout>
+
+            <TextView
+                style="@style/main_txt_value"
+                android:ems="8"
+                android:text="2017-11-18 15:36:20"
+                android:textColor="#000"
+                android:textSize="35sp" />
+        </LinearLayout>
+
+    </LinearLayout>
+</LinearLayout>
