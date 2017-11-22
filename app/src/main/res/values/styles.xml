@@ -6,7 +6,13 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:typeface">serif</item>
     </style>
+
+    <style name="theme_fullScreen" parent="AppTheme">
+        <item name="android:typeface">monospace</item>
+    </style>
+
     <!--主界面上下限字体样式-->
     <style name="main_txt_limit">
         <item name="android:layout_width">wrap_content</item>
@@ -14,6 +20,7 @@
         <item name="android:layout_weight">1</item>
         <item name="android:gravity">center</item>
         <item name="android:textAlignment">center</item>
+        <item name="android:ems">2</item>
         <item name="android:textSize">20sp</item>
     </style>
     <!-- 主界面 值字体样式 -->
