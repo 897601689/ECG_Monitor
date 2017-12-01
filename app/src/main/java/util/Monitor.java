@@ -69,7 +69,6 @@ public class Monitor {
     public static byte SpO2_S_Sensitivity = 0x05;// DC 计算灵敏度设置
     public static byte SpO2_Update = 0x7F;       // DC 在线升级命令
     //</editor-fold>
-    Monitor m = new Monitor();
 
     private byte[] data = new byte[10];//解析数据包缓存
 
@@ -91,13 +90,33 @@ public class Monitor {
 
     private List<Integer> spo2_Curve = new ArrayList<>();//血氧曲线数据
 
+    public Spo2_Data getSpo2_data() {
+        return spo2_data;
+    }
+
     private Spo2_Data spo2_data = new Spo2_Data();
+
+    public ECG_Data getEcg_data() {
+        return ecg_data;
+    }
 
     private ECG_Data ecg_data = new ECG_Data();
 
+    public ECG_Module_State getEcg_ModuleState() {
+        return ecg_ModuleState;
+    }
+
     private ECG_Module_State ecg_ModuleState = new ECG_Module_State();
 
+    public ECG_Message getEcg_message() {
+        return ecg_message;
+    }
+
     private ECG_Message ecg_message = new ECG_Message();
+
+    public Bp_Info getBp_info() {
+        return bp_info;
+    }
 
     private Bp_Info bp_info = new Bp_Info();
 
@@ -118,7 +137,7 @@ public class Monitor {
                 }
             }
         }
-        Log.e(TAG, "buffer"+buffer.size());
+        Log.e(TAG, "buffer:"+buffer.size());
         //buffer.clear();
     }
 
@@ -1157,7 +1176,6 @@ public class Monitor {
 
             while (true) {
                 Thread.sleep(10);//延时2毫秒 位置不能变
-
             }
         } catch (InterruptedException e) {
             e.printStackTrace();

@@ -1,4 +1,4 @@
-package util;
+package widgets;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -40,11 +40,10 @@ public class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback
 
     private float curve = -1;//数据
     private String info = "";//导联
-   // private int backColor = Color.rgb(202, 204, 202);//背景颜色
-    private int backColor = Color.TRANSPARENT;//背景颜色
+    private int backColor = Color.rgb(202, 204, 202);//背景颜色
     private int pen = Color.rgb(255, 0, 0);//画笔颜色
     private int textSize = 14;//字体大小
-    private int amplitude = 0;//幅值长度
+    private int amplitude = 25;//幅值长度
     private int max = 150; //曲线最大值
     private int mCurveType = 0;//0 线 1填充
 
@@ -124,12 +123,12 @@ public class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback
         //mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mPaint = new Paint();
         mPaint.setColor(pen);
-        //mPaint.setAntiAlias(true);          //防锯齿
-        //mPaint.setDither(true);            //防抖动
-        //mPaint.setStyle(Paint.Style.FILL);//画笔类型 STROKE空心 FILL 实心
-        //mPaint.setStrokeWidth(2); // 设置画笔宽度
-        //mPaint.setStrokeCap(Paint.Cap.ROUND); // 设置转弯处为圆角
-        //mPaint.setStrokeJoin(Paint.Join.ROUND);//结合处为圆角
+        mPaint.setAntiAlias(true);          //防锯齿
+        mPaint.setDither(true);            //防抖动
+        mPaint.setStyle(Paint.Style.FILL);//画笔类型 STROKE空心 FILL 实心
+        mPaint.setStrokeWidth(2); // 设置画笔宽度
+        mPaint.setStrokeCap(Paint.Cap.ROUND); // 设置转弯处为圆角
+        mPaint.setStrokeJoin(Paint.Join.ROUND);//结合处为圆角
     }
 
     /**
