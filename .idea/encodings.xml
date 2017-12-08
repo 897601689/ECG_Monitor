@@ -1,8 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/app/src/main/res/layout/bp_auto_setting.xml" charset="GB2312" />
+    <file url="file://$PROJECT_DIR$/app/src/main/res/layout/bp_mode_setting.xml" charset="GB2312" />
+    <file url="file://$PROJECT_DIR$/app/src/main/res/layout/bp_mode_setting.xml" charset="GB2312" />
+    <file url="file://$PROJECT_DIR$/app/src/main/res/layout/bp_param_cali.xml" charset="GB2312" />
+    <file url="file://$PROJECT_DIR$/app/src/main/res/layout/bp_prefill_setting.xml" charset="GB2312" />
     <file url="file://$PROJECT_DIR$/app/src/main/res/layout/hr_alert_param.xml" charset="GB2312" />
+    <file url="file://$PROJECT_DIR$/app/src/main/res/layout/hr_ch_setting.xml" charset="GB2312" />
+    <file url="file://$PROJECT_DIR$/app/src/main/res/layout/hr_filter_setting.xml" charset="GB2312" />
+    <file url="file://$PROJECT_DIR$/app/src/main/res/layout/hr_mag_setting.xml" charset="GB2312" />
     <file url="file://$PROJECT_DIR$/app/src/main/res/layout/ip_setting_win.xml" charset="GB2312" />
+    <file url="file://$PROJECT_DIR$/app/src/main/res/layout/leak_detect.xml" charset="GB2312" />
+    <file url="file://$PROJECT_DIR$/app/src/main/res/layout/resp_mag_setting.xml" charset="GB2312" />
+    <file url="file://$PROJECT_DIR$/app/src/main/res/layout/stat_bp_cali.xml" charset="GB2312" />
     <file url="file://$PROJECT_DIR$/app/src/main/res/raw/alarm.ogg" charset="GB2312" />
   </component>
 </project>

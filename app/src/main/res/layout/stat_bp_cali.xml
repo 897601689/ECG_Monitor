@@ -1,0 +1,55 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/LinearLayout1"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    
+
+    <TableLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:baselineAligned="false"
+        android:measureWithLargestChild="false" >
+
+        <TableRow
+            android:id="@+id/tableRow1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|center|fill"
+            android:baselineAligned="true"
+            android:orientation="horizontal" >
+            
+            <TextView
+        android:id="@+id/bj"
+        android:layout_width="100dp"
+        android:layout_height="35dp"
+		
+        android:background="#C1C1C1"
+        android:text="袖带压力"
+        android:textColor="#000000" 
+        android:textSize="20dp"/>
+
+            <TextView
+                android:id="@+id/thre"
+                android:layout_width="wrap_content"
+                android:layout_height="35dp"
+                android:layout_weight="1"
+                android:text=""
+                android:textSize="28dp" />
+
+            <TextView
+                android:id="@+id/textView1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="mmHg" 
+                android:textSize="20dp"/>
+
+        </TableRow>
+
+
+
+    </TableLayout>
+
+</LinearLayout>

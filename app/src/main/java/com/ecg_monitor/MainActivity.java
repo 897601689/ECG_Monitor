@@ -24,6 +24,8 @@ import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -126,7 +128,7 @@ public class MainActivity extends Activity {
     //<editor-fold desc="网络">
     //Socket套接字
     private Socket socket = null;
-    public static String ip = "192.168.88.126";    //服务器IP
+    public static String ip = "192.168.88.121";    //服务器IP
     //服务器端口
     private static final int SERVER_PORT = 8899;
 
@@ -135,7 +137,9 @@ public class MainActivity extends Activity {
     private OutputStream outputStream = null;
     private InputStream inputStream = null;
     //</editor-fold>
-
+    private View bp_stat_view;
+    private LayoutInflater bp_stat_inflater;
+    private TextView bp_stat_value_text;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -148,7 +152,14 @@ public class MainActivity extends Activity {
 
         init();
     }
-
+    //Activity彻底运行起来之后的回调
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        bp_stat_inflater = (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
+        bp_stat_view = bp_stat_inflater.inflate(R.layout.stat_bp_cali, null);
+        bp_stat_value_text = (TextView) bp_stat_view.findViewById(R.id.thre);
+    }
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -185,11 +196,11 @@ public class MainActivity extends Activity {
 
         //获取IP地址
         SharedPreferences read = getSharedPreferences("setting", MODE_PRIVATE);
-        read.getString("IP", ip);
+        ip = read.getString("IP", ip);
 
-        //new Thread(new AlarmAndTime()).start();
+        new Thread(new AlarmAndTime()).start();
 
-        //new Thread(new MonitorData()).start();
+        new Thread(new MonitorData()).start();
         IntentFilter filter = new IntentFilter(AlertActivity.action);
         registerReceiver(broadcastReceiver, filter);
     }
@@ -251,8 +262,11 @@ public class MainActivity extends Activity {
                     }
                 });
     }
-    public static String hr_alert_switch="on";            //心率报警开关
+
+    public static String hr_alert_switch = "on";            //心率报警开关
+    public static String bp_auto_switch = "off";    //血压自动测量开关
     public static int hr_alert_high, hr_alert_low;    //心率报警上限 /心率报警下限
+
     public void showMenu(List<MenuItem> menuItems, final int index) {
         TopRightMenu mTopRightMenu = new TopRightMenu(MainActivity.this);
         mTopRightMenu
@@ -265,19 +279,84 @@ public class MainActivity extends Activity {
                     public void onMenuItemClick(int position) {
                         Bundle bundle;
                         Intent intent;
-                        switch (index){
-                            case 0:
-                                //<editor-fold desc="上下限设置">
+                        switch (index) {
+                            case 0://报警限设置
+                                //<editor-fold desc="报警限设置">
                                 switch (position) {
                                     case 0:
-                                        intent = new Intent(MainActivity.this, AlertActivity.class);
-                                        bundle = new Bundle();
-                                        bundle.putString("title", "心率");
-                                        bundle.putString("name", "Ecg");
-                                        bundle.putString("limit_H", txtEcgHigh.getText().toString());
-                                        bundle.putString("limit_L", txtEcgLow.getText().toString());
-                                        intent.putExtras(bundle);
-                                        startActivity(intent);
+//                                        intent = new Intent(MainActivity.this, AlertActivity.class);
+//                                        bundle = new Bundle();
+//                                        bundle.putString("title", "心率");
+//                                        bundle.putString("name", "Ecg");
+//                                        bundle.putString("limit_H", txtEcgHigh.getText().toString());
+//                                        bundle.putString("limit_L", txtEcgLow.getText().toString());
+//                                        intent.putExtras(bundle);
+//                                        startActivity(intent);
+
+                                        LayoutInflater inflater = (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
+                                        view = inflater.inflate(R.layout.hr_alert_param, null);
+                                        final ToggleButton hr_alert_switch_field = view.findViewById(R.id.ToggleButton1);
+                                        final TextView hr_alert_high_field = view.findViewById(R.id.textView1);
+                                        final TextView hr_alert_low_field = view.findViewById(R.id.textView2);
+                                        final Button hr_alert_high_field_up = view.findViewById(R.id.sxtj);
+                                        final Button hr_alert_high_field_down = view.findViewById(R.id.sxzs);
+
+                                        final Button hr_alert_low_field_up = view.findViewById(R.id.xxtj);
+                                        final Button hr_alert_low_field_down = view.findViewById(R.id.xxzs);
+                                        AlertDialog.Builder ad = new AlertDialog.Builder(MainActivity.this);
+                                        ad.setView(view);
+                                        ad.setTitle("心率报警设置");
+
+                                        if (hr_alert_switch.equals("on"))
+                                            hr_alert_switch_field.setChecked(true);
+                                        else
+                                            hr_alert_switch_field.setChecked(false);
+                                        hr_alert_high_field.setText(hr_alert_high);
+                                        hr_alert_low_field.setText(hr_alert_low);
+
+                                        hr_alert_high_field_up.setOnClickListener(new Button.OnClickListener() {//创建监听
+                                            public void onClick(View v) {
+                                                hr_alert_high_field.setText(Integer.parseInt(hr_alert_high_field.getText().toString()) + 1 + "");
+                                            }
+                                        });
+
+                                        hr_alert_high_field_down.setOnClickListener(new Button.OnClickListener() {//创建监听
+                                            public void onClick(View v) {
+                                                if (Integer.parseInt(hr_alert_high_field.getText().toString()) - 1 >= Integer.parseInt(hr_alert_low_field.getText().toString()))
+                                                    hr_alert_high_field.setText(Integer.parseInt(hr_alert_high_field.getText().toString()) - 1 + "");
+                                            }
+                                        });
+
+                                        hr_alert_low_field_up.setOnClickListener(new Button.OnClickListener() {//创建监听
+                                            public void onClick(View v) {
+                                                if (Integer.parseInt(hr_alert_low_field.getText().toString()) + 1 <= Integer.parseInt(hr_alert_high_field.getText().toString()))
+                                                    hr_alert_low_field.setText(Integer.parseInt(hr_alert_low_field.getText().toString()) + 1 + "");
+                                            }
+                                        });
+
+                                        hr_alert_low_field_down.setOnClickListener(new Button.OnClickListener() {//创建监听
+                                            public void onClick(View v) {
+                                                if (Integer.parseInt(hr_alert_low_field.getText().toString()) - 1 >= 0)
+                                                    hr_alert_low_field.setText(Integer.parseInt(hr_alert_low_field.getText().toString()) - 1 + "");
+                                            }
+                                        });
+
+                                        selfdialog = ad.create();
+                                        selfdialog.setButton("取消", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(final DialogInterface dialog, final int which) {
+                                                selfdialog.cancel();
+                                            }
+                                        });
+                                        selfdialog.setButton2("设置", new DialogInterface.OnClickListener() {
+
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                txtEcgHigh.setText(hr_alert_high_field.getText());
+                                                selfdialog.cancel();
+                                            }
+                                        });
+                                        selfdialog.show();
                                         break;
                                     case 1:
                                         intent = new Intent(MainActivity.this, AlertActivity.class);
@@ -332,61 +411,169 @@ public class MainActivity extends Activity {
                                 }
                                 //</editor-fold>
                                 break;
-                            case 1:
-                                switch (position){
+                            case 1://维护设置
+                                //<editor-fold desc="维护设置">
+                                switch (position) {
                                     case 0://漏气检测
-                                        //创建view从当前activity获取loginactivity
                                         LayoutInflater inflater = (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
-                                        view = inflater.inflate(R.layout.hr_alert_param, null);
-                                        // Spinner spinner = (Spinner)view.findViewById(R.id.xdlb);
-                                        final ToggleButton hr_alert_switch_field = (ToggleButton) view.findViewById(R.id.ToggleButton1);
-                                        final TextView hr_alert_high_field = (TextView) view.findViewById(R.id.textView1);
-                                        final TextView hr_alert_low_field = (TextView) view.findViewById(R.id.textView2);
-                                        final Button hr_alert_high_field_up = (Button) view.findViewById(R.id.sxtj);
-                                        final Button hr_alert_high_field_down = (Button) view.findViewById(R.id.sxzs);
+                                        view = inflater.inflate(R.layout.leak_detect, null);
+                                        final TextView thre = (TextView) view.findViewById(R.id.thre);
+                                        final Button thre_up = (Button) view.findViewById(R.id.up);
+                                        final Button thre_down = (Button) view.findViewById(R.id.down);
+                                        final Button start_detect = (Button) view.findViewById(R.id.start_detect);
 
-                                        final Button hr_alert_low_field_up = (Button) view.findViewById(R.id.xxtj);
-                                        final Button hr_alert_low_field_down = (Button) view.findViewById(R.id.xxzs);
-                                        ArrayAdapter<String> adapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_spinner_item, new String[]{"手术模式", "监护模式", "诊断模式"});
-                                        //spinner.setAdapter(adapter);
                                         AlertDialog.Builder ad = new AlertDialog.Builder(MainActivity.this);
                                         ad.setView(view);
-                                        ad.setTitle("心率报警设置");
+                                        ad.setTitle("漏气检测");
 
-                                        if (hr_alert_switch.equals("on"))
-                                            hr_alert_switch_field.setChecked(true);
-                                        else
-                                            hr_alert_switch_field.setChecked(false);
-                                        //String s = (String) hr_alert_high_field.getText();
-                                        hr_alert_high_field.setText(hr_alert_high + "");
-                                        hr_alert_low_field.setText(hr_alert_low + "");
 
-                                        hr_alert_high_field_up.setOnClickListener(new Button.OnClickListener() {//创建监听
+                                        thre_up.setOnClickListener(new Button.OnClickListener() {//创建监听
                                             public void onClick(View v) {
-                                                hr_alert_high_field.setText(Integer.parseInt(hr_alert_high_field.getText().toString()) + 1 + "");
+                                                thre.setText(Integer.parseInt(thre.getText().toString()) + 10 + "");
                                             }
+
                                         });
 
-                                        hr_alert_high_field_down.setOnClickListener(new Button.OnClickListener() {//创建监听
+                                        thre_down.setOnClickListener(new Button.OnClickListener() {//创建监听
                                             public void onClick(View v) {
-                                                if (Integer.parseInt(hr_alert_high_field.getText().toString()) - 1 >= Integer.parseInt(hr_alert_low_field.getText().toString()))
-                                                    hr_alert_high_field.setText(Integer.parseInt(hr_alert_high_field.getText().toString()) - 1 + "");
+                                                thre.setText(Integer.parseInt(thre.getText().toString()) - 10 + "");
                                             }
+
                                         });
 
-                                        hr_alert_low_field_up.setOnClickListener(new Button.OnClickListener() {//创建监听
+                                        start_detect.setOnClickListener(new Button.OnClickListener() {//创建监听
                                             public void onClick(View v) {
-                                                if (Integer.parseInt(hr_alert_low_field.getText().toString()) + 1 <= Integer.parseInt(hr_alert_high_field.getText().toString()))
-                                                    hr_alert_low_field.setText(Integer.parseInt(hr_alert_low_field.getText().toString()) + 1 + "");
+                                                send(new byte[0]);
+
                                             }
+
                                         });
 
-                                        hr_alert_low_field_down.setOnClickListener(new Button.OnClickListener() {//创建监听
-                                            public void onClick(View v) {
-                                                if (Integer.parseInt(hr_alert_low_field.getText().toString()) - 1 >= 0)
-                                                    hr_alert_low_field.setText(Integer.parseInt(hr_alert_low_field.getText().toString()) - 1 + "");
+
+                                        selfdialog = ad.create();
+                                        selfdialog.setButton("取消", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(final DialogInterface dialog, final int which) {
+                                                send(new byte[0]);
+                                                selfdialog.cancel();
                                             }
                                         });
+                                        selfdialog.setButton2("确定", new DialogInterface.OnClickListener() {
+
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                send(new byte[0]);
+                                                selfdialog.cancel();
+                                            }
+                                        });
+                                        selfdialog.show();
+                                        break;
+                                    case 1://静态压力校准
+                                        ad = new AlertDialog.Builder(MainActivity.this);
+                                        ad.setView(bp_stat_view);
+                                        ad.setTitle("静态压力校准");
+
+
+                                        selfdialog = ad.create();
+                                        send(new byte[0]);
+                                        selfdialog.setButton("取消", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(final DialogInterface dialog, final int which) {
+                                                send(new byte[0]);
+                                                selfdialog.cancel();
+                                            }
+                                        });
+                                        selfdialog.setButton2("确定", new DialogInterface.OnClickListener() {
+
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                send(new byte[0]);
+                                                selfdialog.cancel();
+                                            }
+                                        });
+                                        selfdialog.show();
+                                        break;
+                                    case 2://压力参数校准
+                                        inflater = (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
+                                        view = inflater.inflate(R.layout.bp_param_cali, null);
+
+
+                                        ad = new AlertDialog.Builder(MainActivity.this);
+                                        ad.setView(view);
+                                        ad.setTitle("血压参数校准");
+
+
+                                        selfdialog = ad.create();
+                                        send(new byte[0]);
+                                        selfdialog.setButton("取消", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(final DialogInterface dialog, final int which) {
+                                                send(new byte[0]);
+                                                selfdialog.cancel();
+                                            }
+                                        });
+                                        selfdialog.setButton2("确定", new DialogInterface.OnClickListener() {
+
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                send(new byte[0]);
+                                                selfdialog.cancel();
+                                            }
+                                        });
+                                        selfdialog.show();
+                                        break;
+                                    case 3://日期时间设置
+                                        break;
+                                    case 4://服务器IP设置
+                                        //<editor-fold desc="服务器IP设置">
+                                        inflater = (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
+                                        view = inflater.inflate(R.layout.ip_setting_win, null);
+
+                                        final EditText ip_field = (EditText) view.findViewById(R.id.editText1);
+                                        ArrayAdapter<String> adapter = new ArrayAdapter<>(MainActivity.this,
+                                                android.R.layout.simple_spinner_item, new String[]{"开", "关"});
+                                        ad = new AlertDialog.Builder(MainActivity.this);
+                                        ad.setView(view);
+                                        ad.setTitle("服务器IP设置");
+                                        ip_field.setText(ip);
+                                        selfdialog = ad.create();
+                                        selfdialog.setButton("取消", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(final DialogInterface dialog, final int which) {
+                                                selfdialog.cancel();
+                                            }
+                                        });
+                                        selfdialog.setButton2("设置", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                String code = ip_field.getText().toString().trim();
+                                                SharedPreferences.Editor editor = getSharedPreferences("setting", MODE_PRIVATE).edit();
+                                                editor.putString("IP", code);
+                                                editor.apply();
+                                                selfdialog.cancel();
+                                            }
+                                        });
+                                        selfdialog.show();
+                                        //</editor-fold>
+                                        break;
+                                }
+                                //</editor-fold>
+                                break;
+                            case 2://心电设置
+                                //<editor-fold desc="心电设置">
+                                switch (position) {
+                                    case 0://心电滤波模式
+                                        //<editor-fold desc="心电滤波模式">
+                                        LayoutInflater inflater = (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
+                                        view = inflater.inflate(R.layout.hr_filter_setting, null);
+                                        final RadioGroup hr_filter_setting_field = (RadioGroup) view.findViewById(R.id.radioGroup1);
+                                        AlertDialog.Builder ad = new AlertDialog.Builder(MainActivity.this);
+                                        ad.setView(view);
+                                        ad.setTitle("心电滤波模式设置");
+                                        String ss = getParamSettings("ecg_filter_mode");
+                                        if (ss != null)
+                                            if (Integer.parseInt(ss) >= 0)
+                                                ((RadioButton) (hr_filter_setting_field.getChildAt(Integer.parseInt(ss)))).setChecked(true);
 
                                         selfdialog = ad.create();
                                         selfdialog.setButton("取消", new DialogInterface.OnClickListener() {
@@ -399,78 +586,397 @@ public class MainActivity extends Activity {
 
                                             @Override
                                             public void onClick(DialogInterface dialog, int which) {
-                                                txtEcgHigh.setText(hr_alert_high_field.getText());
+                                                for (int i = 0; i < hr_filter_setting_field.getChildCount(); i++)
+                                                    if (((RadioButton) hr_filter_setting_field.getChildAt(i)).isChecked()) {
+                                                        switch (i) {
+                                                            case 0:
+                                                                send(new byte[0]);
+                                                                break;
+                                                            case 1:
+                                                                send(new byte[0]);
+                                                                break;
+                                                            case 2:
+                                                                send(new byte[0]);
+                                                                break;
+
+                                                        }
+                                                        setParamSetting("ecg_filter_mode", i + "");
+                                                        break;
+                                                    }
                                                 selfdialog.cancel();
                                             }
                                         });
                                         selfdialog.show();
-                                        break;
-                                    case 1://静态压力校准
-                                        break;
-                                    case 2://压力参数校准
-                                        break;
-                                    case 3://日期时间设置
-                                        break;
-                                    case 4://服务器IP设置
-//                                        LayoutInflater inflater = (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
-//                                        view = inflater.inflate(R.layout.ip_setting_win, null);
-//
-//                                        final EditText ip_field = (EditText) view.findViewById(R.id.editText1);
-//                                        ArrayAdapter<String> adapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_spinner_item, new String[]{"开", "关"});
-//
-//                                        AlertDialog.Builder ad = new AlertDialog.Builder(MainActivity.this);
-//                                        ad.setView(view);
-//                                        ad.setTitle("服务器IP设置");
-//                                        ip_field.setText(ip);
-//                                        selfdialog = ad.create();
-//                                        selfdialog.setButton("取消", new DialogInterface.OnClickListener() {
-//                                            @Override
-//                                            public void onClick(final DialogInterface dialog, final int which) {
-//                                                selfdialog.cancel();
-//                                            }
-//                                        });
-//                                        selfdialog.setButton2("设置", new DialogInterface.OnClickListener() {
-//
-//                                            @Override
-//                                            public void onClick(DialogInterface dialog, int which) {
-//                                                String code = ip_field.getText().toString().trim();
-//                                                SharedPreferences.Editor editor = getSharedPreferences("setting", MODE_PRIVATE).edit();
-//                                                editor.putString("IP", code);
-//                                                editor.apply();
-//
-//                                                selfdialog.cancel();
-//                                            }
-//                                        });
-//                                        selfdialog.show();
-                                        break;
-                                }
-                                break;
-                            case 2:
-                                switch (position){
-                                    case 0://心电滤波模式
+                                        //</editor-fold>
                                         break;
                                     case 1://心电波形增益
+                                        //<editor-fold desc="心电波形增益">
+                                        inflater = (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
+                                        view = inflater.inflate(R.layout.hr_mag_setting, null);
+                                        final RadioGroup ecg_mag_setting_field = (RadioGroup) view.findViewById(R.id.radioGroup1);
+                                        ad = new AlertDialog.Builder(MainActivity.this);
+                                        ad.setView(view);
+                                        ad.setTitle("心电波形增益设置");
+                                        ss = getParamSettings("ecg_mag");
+                                        if (ss != null)
+                                            if (Integer.parseInt(ss) >= 0)
+                                                ((RadioButton) (ecg_mag_setting_field.getChildAt(Integer.parseInt(ss)))).setChecked(true);
+
+                                        //ecg_mag_setting_field.setId(Integer.parseInt(ecg_mag));
+                                        selfdialog = ad.create();
+                                        selfdialog.setButton("取消", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(final DialogInterface dialog, final int which) {
+                                                selfdialog.cancel();
+                                            }
+                                        });
+                                        selfdialog.setButton2("设置", new DialogInterface.OnClickListener() {
+
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+
+                                                for (int i = 0; i < ecg_mag_setting_field.getChildCount(); i++)
+                                                    if (((RadioButton) ecg_mag_setting_field.getChildAt(i)).isChecked()) {
+                                                        switch (i) {
+                                                            case 0:
+                                                                send(new byte[0]);
+                                                                break;
+                                                            case 1:
+                                                                send(new byte[0]);
+                                                                break;
+                                                            case 2:
+                                                                send(new byte[0]);
+                                                                break;
+                                                            case 3:
+                                                                send(new byte[0]);
+                                                                break;
+
+                                                        }
+                                                        setParamSetting("ecg_mag", String.valueOf(i));
+                                                        break;
+                                                    }
+                                                selfdialog.cancel();
+                                            }
+                                        });
+                                        selfdialog.show();
+                                        //</editor-fold>
                                         break;
-                                    case 2://心电导联切换
+                                    case 2://呼吸波形增益
+                                        //<editor-fold desc="呼吸波形增益">
+                                        inflater = (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
+                                        view = inflater.inflate(R.layout.resp_mag_setting, null);
+                                        final RadioGroup resp_mag_setting_field = (RadioGroup) view.findViewById(R.id.radioGroup1);
+
+                                        ad = new AlertDialog.Builder(MainActivity.this);
+                                        ad.setView(view);
+                                        ad.setTitle("呼吸波形增益设置");
+                                        ss = getParamSettings("ecg_mag");
+                                        if (ss != null)
+                                            if (Integer.parseInt(ss) >= 0)
+                                                ((RadioButton) (resp_mag_setting_field.getChildAt(Integer.parseInt(ss)))).setChecked(true);
+
+                                        //resp_mag_setting_field.setId(Integer.parseInt(resp_curve_mag));
+                                        selfdialog = ad.create();
+                                        selfdialog.setButton("取消", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(final DialogInterface dialog, final int which) {
+                                                selfdialog.cancel();
+                                            }
+                                        });
+                                        selfdialog.setButton2("设置", new DialogInterface.OnClickListener() {
+
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                //setParamSetting("resp_curve_mag",resp_mag_setting_field.getCheckedRadioButtonId()+"");
+                                                for (int i = 0; i < resp_mag_setting_field.getChildCount(); i++)
+                                                    if (((RadioButton) resp_mag_setting_field.getChildAt(i)).isChecked()) {
+                                                        switch (i) {
+                                                            case 0:
+                                                                send(new byte[0]);
+                                                                break;
+                                                            case 1:
+                                                                send(new byte[0]);
+                                                                break;
+                                                            case 2:
+                                                                send(new byte[0]);
+                                                                break;
+                                                            case 3:
+                                                                send(new byte[0]);
+                                                                break;
+                                                        }
+                                                        setParamSetting("resp_curve_mag", i + "");
+                                                        break;
+                                                    }
+                                                selfdialog.cancel();
+                                            }
+                                        });
+                                        selfdialog.show();
+                                        //</editor-fold>
+                                        break;
+                                    case 3://心电导联切换
+                                        //<editor-fold desc="心电导联切换">
+                                        inflater = (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
+                                        view = inflater.inflate(R.layout.hr_ch_setting, null);
+                                        final RadioGroup hr_channel_setting_field = (RadioGroup) view.findViewById(R.id.radioGroup1);
+                                        ad = new AlertDialog.Builder(MainActivity.this);
+                                        ad.setView(view);
+                                        ad.setTitle("心电导联切换设置");
+                                        ss = getParamSettings("ecg_channel");
+                                        if (ss != null)
+                                            if (Integer.parseInt(ss) >= 0)
+                                                ((RadioButton) (hr_channel_setting_field.getChildAt(Integer.parseInt(ss)))).setChecked(true);
+                                        selfdialog = ad.create();
+                                        selfdialog.setButton("取消", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(final DialogInterface dialog, final int which) {
+                                                selfdialog.cancel();
+                                            }
+                                        });
+                                        selfdialog.setButton2("设置", new DialogInterface.OnClickListener() {
+
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                for (int i = 0; i < hr_channel_setting_field.getChildCount(); i++)
+                                                    if (((RadioButton) hr_channel_setting_field.getChildAt(i)).isChecked()) {
+                                                        switch (i) {
+                                                            case 0:
+                                                                break;
+                                                            case 1:
+                                                                break;
+                                                            case 2:
+                                                                break;
+                                                            case 3:
+                                                                break;
+
+                                                        }
+                                                        setParamSetting("ecg_channel", i + "");
+                                                        break;
+                                                    }
+                                                selfdialog.cancel();
+                                            }
+                                        });
+                                        selfdialog.show();
+                                        //</editor-fold>
                                         break;
                                 }
+                                //</editor-fold>
                                 break;
-                            case 3:
-                                switch (position){
+                            case 3://血压设置
+                                //<editor-fold desc="血压设置">
+                                switch (position) {
                                     case 0://自动检测设置
+                                        //<editor-fold desc="自动检测设置">
+                                        LayoutInflater inflater = (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
+                                        view = inflater.inflate(R.layout.bp_auto_setting, null);
+                                        final ToggleButton bp_auto_switch_field = view.findViewById(R.id.toggleButton1);
+                                        final RadioGroup bp_auto_inter_field = view.findViewById(R.id.radioGroup1);
+                                        AlertDialog.Builder ad = new AlertDialog.Builder(MainActivity.this);
+                                        ad.setView(view);
+                                        ad.setTitle("血压自动测量设置");
+
+                                        if (bp_auto_switch.equals("on"))
+                                            bp_auto_switch_field.setChecked(true);
+                                        else
+                                            bp_auto_switch_field.setChecked(false);
+                                        String ss = getParamSettings("bp_auto_inter");
+                                        if (ss != null)
+                                            if (Integer.parseInt(ss) >= 0)
+                                                ((RadioButton) (bp_auto_inter_field.getChildAt(Integer.parseInt(ss)))).setChecked(true);
+                                        selfdialog = ad.create();
+                                        selfdialog.setButton("取消", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(final DialogInterface dialog, final int which) {
+                                                selfdialog.cancel();
+                                            }
+                                        });
+                                        selfdialog.setButton2("设置", new DialogInterface.OnClickListener() {
+
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                if (bp_auto_switch_field.isChecked()) {
+                                                    setParamSetting("bp_auto_switch", "on");
+                                                    bp_auto_switch = "on";
+                                                } else {
+                                                    setParamSetting("bp_auto_switch", "off");
+                                                    bp_auto_switch = "off";
+                                                }
+                                                for (int i = 0; i < bp_auto_inter_field.getChildCount(); i++)
+                                                    if (((RadioButton) bp_auto_inter_field.getChildAt(i)).isChecked()) {
+                                                        setParamSetting("bp_auto_inter", String.valueOf(i));
+                                                        //发送血压命令
+                                                        break;
+                                                    }
+
+                                                selfdialog.cancel();
+                                            }
+                                        });
+                                        selfdialog.show();
+                                        //</editor-fold>
                                         break;
                                     case 1://预充气压力
+                                        //<editor-fold desc="预充气压力">
+                                        inflater = (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
+                                        view = inflater.inflate(R.layout.bp_prefill_setting, null);
+
+                                        ad = new AlertDialog.Builder(MainActivity.this);
+                                        ad.setView(view);
+                                        ad.setTitle("预充气压力设置");
+
+                                        final TextView cr_prefill_param = view.findViewById(R.id.cr);
+                                        final TextView et_prefill_param = view.findViewById(R.id.et);
+                                        final TextView ye_prefill_param = view.findViewById(R.id.ye);
+
+                                        final Button cr_up = view.findViewById(R.id.crup);
+                                        final Button cr_down = view.findViewById(R.id.crdown);
+
+                                        final Button et_up = view.findViewById(R.id.etup);
+                                        final Button et_down = view.findViewById(R.id.etdown);
+
+                                        final Button ye_up = view.findViewById(R.id.yeup);
+                                        final Button ye_down = view.findViewById(R.id.yedown);
+
+                                        cr_up.setOnClickListener(new Button.OnClickListener() {//创建监听
+                                            public void onClick(View v) {
+                                                if (Integer.parseInt(cr_prefill_param.getText().toString()) + 10 <= 280)
+                                                    cr_prefill_param.setText(Integer.parseInt(cr_prefill_param.getText().toString()) + 10 + "");
+                                            }
+
+                                        });
+
+                                        cr_down.setOnClickListener(new Button.OnClickListener() {//创建监听
+                                            public void onClick(View v) {
+                                                if (Integer.parseInt(cr_prefill_param.getText().toString()) - 10 >= 80)
+                                                    cr_prefill_param.setText(Integer.parseInt(cr_prefill_param.getText().toString()) - 10 + "");
+                                            }
+
+                                        });
+
+
+                                        et_up.setOnClickListener(new Button.OnClickListener() {//创建监听
+                                            public void onClick(View v) {
+                                                if (Integer.parseInt(et_prefill_param.getText().toString()) + 10 <= 220)
+                                                    et_prefill_param.setText(Integer.parseInt(et_prefill_param.getText().toString()) + 10 + "");
+                                            }
+
+                                        });
+
+                                        et_down.setOnClickListener(new Button.OnClickListener() {//创建监听
+                                            public void onClick(View v) {
+                                                if (Integer.parseInt(et_prefill_param.getText().toString()) - 10 >= 80)
+                                                    et_prefill_param.setText(Integer.parseInt(et_prefill_param.getText().toString()) - 10 + "");
+                                            }
+
+                                        });
+
+
+                                        ye_up.setOnClickListener(new Button.OnClickListener() {//创建监听
+                                            public void onClick(View v) {
+                                                if (Integer.parseInt(ye_prefill_param.getText().toString()) + 10 <= 120)
+                                                    ye_prefill_param.setText(Integer.parseInt(ye_prefill_param.getText().toString()) + 10 + "");
+                                            }
+
+                                        });
+
+                                        ye_down.setOnClickListener(new Button.OnClickListener() {//创建监听
+                                            public void onClick(View v) {
+                                                if (Integer.parseInt(ye_prefill_param.getText().toString()) - 10 >= 60)
+                                                    ye_prefill_param.setText(Integer.parseInt(ye_prefill_param.getText().toString()) - 10 + "");
+                                            }
+
+                                        });
+
+
+                                        selfdialog = ad.create();
+                                        selfdialog.setButton("取消", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(final DialogInterface dialog, final int which) {
+                                                selfdialog.cancel();
+                                            }
+                                        });
+                                        selfdialog.setButton2("设置", new DialogInterface.OnClickListener() {
+
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+
+                                                //发送命令
+                                                selfdialog.cancel();
+                                            }
+                                        });
+                                        selfdialog.show();
+                                        //</editor-fold>
                                         break;
                                     case 2://血压模式设置
+                                        //<editor-fold desc="血压模式设置">
+                                        inflater = (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
+                                        view = inflater.inflate(R.layout.bp_mode_setting, null);
+
+                                        final RadioGroup bp_mode_field = (RadioGroup) view.findViewById(R.id.radioGroup1);
+                                        ad = new AlertDialog.Builder(MainActivity.this);
+                                        ad.setView(view);
+                                        ad.setTitle("血压测量模式设置");
+                                        ss = getParamSettings("bp_mode");
+                                        if (ss != null)
+                                            if (!ss.equals(""))
+                                                if (Integer.parseInt(ss) >= 0)
+                                                    ((RadioButton) (bp_mode_field.getChildAt(Integer.parseInt(ss)))).setChecked(true);
+
+                                        selfdialog = ad.create();
+                                        selfdialog.setButton("取消", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(final DialogInterface dialog, final int which) {
+                                                selfdialog.cancel();
+                                            }
+                                        });
+                                        selfdialog.setButton2("设置", new DialogInterface.OnClickListener() {
+
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                for (int i = 0; i < bp_mode_field.getChildCount(); i++)
+                                                    if (((RadioButton) bp_mode_field.getChildAt(i)).isChecked()) {
+                                                        switch (i) {
+                                                            case 0:
+                                                                send(new byte[0]);
+                                                                break;
+                                                            case 1:
+                                                                send(new byte[0]);
+                                                                break;
+                                                            case 2:
+                                                                send(new byte[0]);
+                                                                break;
+                                                        }
+                                                        setParamSetting("bp_mode", String.valueOf(i));
+                                                        break;
+                                                    }
+                                                selfdialog.cancel();
+                                            }
+                                        });
+                                        selfdialog.show();
+                                        //</editor-fold>
                                         break;
                                 }
+                                //</editor-fold>
                                 break;
                         }
-
-
                     }
                 })
                 .showAsDropDown(txtBioAlarm, -5, -100);
+    }
+
+    //设置参数
+    private void setParamSetting(String name, String Value) {
+        SharedPreferences.Editor editor = getSharedPreferences("setting", MODE_PRIVATE).edit();
+        editor.putString(name, Value);
+        editor.apply();
+
+
+    }
+
+    //获取参数设置
+    private String getParamSettings(String name) {
+        //获取IP地址
+        SharedPreferences read = getSharedPreferences("setting", MODE_PRIVATE);
+        String str = read.getString(name, null);
+        return str;
     }
 
     private AlertDialog selfdialog;
