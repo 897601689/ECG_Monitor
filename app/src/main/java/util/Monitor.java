@@ -2,6 +2,8 @@ package util;
 
 import android.util.Log;
 
+import com.ecg_monitor.MainActivity;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,7 +72,7 @@ public class Monitor {
     public static byte SpO2_Update = 0x7F;       // DC 在线升级命令
     //</editor-fold>
 
-    private byte[] data = new byte[10];//解析数据包缓存
+    private int[] data = new int[10];//解析数据包缓存
 
     public Hr_Curve getHrCurve() {
         return hrCurve;
@@ -79,6 +81,7 @@ public class Monitor {
     private Hr_Curve hrCurve = new Hr_Curve();
 
 
+    private List<Integer> buffer = new ArrayList<>();
     public static int id = 0;
     private static List<Integer> ids = new ArrayList<>();//发送过命令的上位机序列号
 
@@ -120,25 +123,36 @@ public class Monitor {
 
     private Bp_Info bp_info = new Bp_Info();
 
-    public void CmdParser(List<Byte> buffer) {
+
+    //将有符号数转换为整形
+    public int getUnsignedByte(byte data) {
+        return data & 0x0ff;
+    }
+
+    public void CmdParser(byte[] bytes) {
+        if (bytes == null)
+            return;
         hrCurve.Clear();
         spo2_Curve.clear();
-        //Log.e(TAG, "buffer"+buffer.size());
+        //buffer.clear();
+
+        for (byte aByte : bytes) {
+            buffer.add(getUnsignedByte(aByte));
+        }
         for (int i = 0; i < buffer.size(); i++) {
-            if (buffer.get(i) == (byte)0xFA) {
-                //buffer.RemoveRange(0, i);      //删除原始数据
+            if (buffer.get(i) == 0xFA) {
                 if (buffer.size() - i >= 10) {
-                    data = GetData(i, buffer.get(i + 1), buffer);//buffer.get(i + 1) 此数据包的长度
+                    data = GetData(i, buffer.get(i + 1) & 0x0ff, buffer);//buffer.get(i + 1) 此数据包的长度
                     if (data != null && data.length != 0) {
-                        i = -1;
+                        i--;
                         if (IsCheckCmd(data))
                             Parser(data);//解析
                     }
                 }
             }
         }
-        Log.e(TAG, "buffer:"+buffer.size());
         //buffer.clear();
+        //Log.e("buffer", "" + buffer.size());
     }
 
     /**
@@ -149,46 +163,57 @@ public class Monitor {
      * @param list 被截取的数组
      * @return 截取到的数组
      */
-    private byte[] GetData(int i, int len, List<Byte> list) {
-        byte[] data = new byte[len];
-        if (list.size() >= len) {
+    private int[] GetData(int i, int len, List<Integer> list) {
+        int[] dataPackage = new int[len];
+        if (list.size() - i >= len) {
             for (int index = 0; index < len; index++) {
-                data[index] = list.get(i);
+                dataPackage[index] = list.get(i);
                 list.remove(i);
             }
         } else {
-            data = null;
+            dataPackage = null;
         }
-        return data;
+        return dataPackage;
     }
 
     /**
      * 验证命令校验和
-     * @param buffer
+     *
+     * @param data
      * @return
      */
-    private boolean IsCheckCmd(byte[] buffer) {
-        byte sum = 0;
-        for (int i = 1; i < buffer.length - 1; i++) {
-            sum = (byte) (sum + buffer[i]);
+    private boolean IsCheckCmd(int[] data) {
+        int sum = 0;
+        for (int i = 1; i < data.length - 1; i++) {
+            sum = sum + data[i];
         }
-        if (sum == buffer[buffer.length - 1]) {
+        if ((sum & 0x0ff) == data[data.length - 1]) {
             return true;
         }
         return false;
     }
 
+    //获取校验和
+    public int CheckNum(byte[] data) {
+        int sum = 0;
+        for (int i = 1; i < data.length - 1; i++) {
+            sum = sum + data[i];
+        }
+        return sum & 0x0ff;
+    }
+
     /**
      * 解析数据包
+     *
      * @param data 需要解析的数据
      */
-    private void Parser(byte[] data) {
+    private void Parser(int[] data) {
         //参数类型
         switch (data[2]) {
             case 0x01://ECG
                 //<editor-fold desc="ECG">
                 switch (data[4]) {
-                    case (byte) 0x80://通用命令应答包
+                    case 0x80://通用命令应答包
                         //<editor-fold desc="通用命令应答">
                         switch (data[9]) {
                             case 0x01:
@@ -221,9 +246,10 @@ public class Monitor {
                         }
                         //</editor-fold>
                         break;
-                    case (byte) 0x81://上电握手请求数据
+                    case 0x81://上电握手请求数据
+                        MainActivity.send(Directive.Ecg_Handshake);
                         break;
-                    case (byte) 0x82://模块信息应答数据
+                    case 0x82://模块信息应答数据
 
                         //<editor-fold desc="模块信息">
                         int a1 = data[9];//软件主版本号
@@ -246,7 +272,7 @@ public class Monitor {
                         int Watchdog = data[18] >> 6 & 0x01;
                         //</editor-fold>
                         break;
-                    case (byte) 0x83://模块状态应答数据
+                    case 0x83://模块状态应答数据
 
                         //<editor-fold desc="模块状态信息">
                         switch (data[9])//病人类型
@@ -437,7 +463,7 @@ public class Monitor {
                         }
                         //</editor-fold>
                         break;
-                    case (byte) 0x90://心电呼吸波形数据  500hz 的频率
+                    case 0x90://心电呼吸波形数据  500hz 的频率
                         //9,10,11,12,13,14,15
                         //1,2 ,3 ,4 ,5 ,6 ,7
                         switch (data[9] & 0x01) {
@@ -456,19 +482,23 @@ public class Monitor {
                                 ecg_message.R = true;
                                 break;
                         }
-                        hrCurve.HR_I.add(data[10] | ((data[11] & 0xF) << 8));           //心电通道 I 的波形
-                        hrCurve.HR_II.add((data[11] >> 4) | (data[12] << 4));           //心电通道 II 的波形
-                        hrCurve.HR_V1.add(data[13] | ((data[14] & 0xF) << 8));          //心电通道 V1 的波形
-                        hrCurve.HR_RESP.add((data[14] >> 4) | (data[15] << 4)); //呼吸波形
-                        break;
-                    case (byte) 0x91://心率/呼吸率数据 如果上传结果为-100，表示未计算得到结果，为无效值 FF9C
-                        int hr = data[9] | (data[10] << 8);//心率 15~300
 
+                        int hr_i = data[10] | ((data[11] & 0xF) << 8);
+                        int hr_ii = (data[11] >> 4) | (data[12] << 4);
+                        int hr_v = data[13] | ((data[14] & 0xF) << 8);
+                        int hr_r = (data[14] >> 4) | (data[15] << 4);
+                        hrCurve.HR_I.add(hr_i);             //心电通道 I 的波形
+                        hrCurve.HR_II.add(hr_ii);           //心电通道 II 的波形
+                        hrCurve.HR_V1.add(hr_v);            //心电通道 V1 的波形
+                        hrCurve.HR_RESP.add(hr_r);          //呼吸波形
+                        break;
+                    case 0x91://心率/呼吸率数据 如果上传结果为-100，表示未计算得到结果，为无效值 FF9C
+                        int hr = data[9] | (data[10] << 8);//心率 15~300
                         ecg_data.Data_Hr = hr;
                         int rr = data[11] | (data[12] << 8);//呼吸率 15~200
                         ecg_data.Data_Resp = rr;
                         break;
-                    case (byte) 0x92://心电导联状态数据包 '1' 有效
+                    case 0x92://心电导联状态数据包 '1' 有效
                         //<editor-fold desc="心电导联状态">
                         int lead = data[9] & 0x01; //5 导联模式
                         if (lead == 1) {
@@ -512,12 +542,12 @@ public class Monitor {
                         }
                         //</editor-fold>
                         break;
-                    case (byte) 0x93://心电通道过载标志数据包
+                    case 0x93://心电通道过载标志数据包
                         int overload_I = data[9] & 0x01;      //通道 I 过载
                         int overload_II = data[9] >> 1 & 0x01;//通道 II 过载
                         int overload_V1 = data[9] >> 2 & 0x01;//通道 V1 过载
                         break;
-                    case (byte) 0x94://心率计算/ 心律失常分析通道数据包
+                    case 0x94://心率计算/ 心律失常分析通道数据包
                         switch (data[9]) {
                             case 0x00://通道 I
                                 break;
@@ -537,12 +567,12 @@ public class Monitor {
                                 break;
                         }
                         break;
-                    case (byte) 0x95://心律失常分析起始标志数据包
-                        if (data[9] == 0 & data[10] == (byte) 0x9C & data[11] == (byte) 0xFF) {
+                    case 0x95://心律失常分析起始标志数据包
+                        if (data[9] == 0 & data[10] == 0x9C & data[11] == 0xFF) {
                             //开始发送
                         }
                         break;
-                    case (byte) 0x96://心律失常分析结果数据包
+                    case 0x96://心律失常分析结果数据包
                         //<editor-fold desc="心律失常代码">
                         String result;
                         switch (data[9]) {
@@ -618,7 +648,7 @@ public class Monitor {
                         ecg_message.Arrhythmia_Now = data[10] | (data[11] << 8);//当次心律失常位置
                         //</editor-fold>
                         break;
-                    case (byte) 0x97://心律失常分析状态数据包
+                    case 0x97://心律失常分析状态数据包
                         //<editor-fold desc="心律失常分析状态">
                         String state = "";
                         switch (data[9]) {
@@ -647,13 +677,13 @@ public class Monitor {
                         ecg_message.Arrhythmia_State = state;
                         //</editor-fold>
                         break;
-                    case (byte) 0x98:// 心电 ST  值数据包 //ST 值扩大 100 倍上传，如果上传结果为-100，表示未计算得到结果，为无效值。
+                    case 0x98:// 心电 ST  值数据包 //ST 值扩大 100 倍上传，如果上传结果为-100，表示未计算得到结果，为无效值。
                         int Num = data[9];//ST 值的组别
                         float ST1 = (data[10] | (data[11] << 8)) / 100;//数据1
                         float ST2 = (data[12] | (data[13] << 8)) / 100;//数据2
                         float ST3 = (data[14] | (data[15] << 8)) / 100;//数据3
                         break;
-                    case (byte) 0x99:// 心电 ST  模板数据包
+                    case 0x99:// 心电 ST  模板数据包
 
                         switch (data[9])//当前 ST 模板的通道
                         {
@@ -679,7 +709,7 @@ public class Monitor {
                             ST_Data.clear();
                         }
                         break;
-                    case (byte) 0xA0://呼吸窒息数据包
+                    case 0xA0://呼吸窒息数据包
                         switch (data[9]) {
                             case 0x00:
                                 ecg_message.apnea = false;//无窒息
@@ -689,7 +719,7 @@ public class Monitor {
                                 break;
                         }
                         break;
-                    case (byte) 0xA1://  呼吸 CVA  标志数据包
+                    case 0xA1://  呼吸 CVA  标志数据包
                         switch (data[9]) {
                             case 0x00:
                                 ecg_message.CVA = false;//
@@ -699,10 +729,10 @@ public class Monitor {
                                 break;
                         }
                         break;
-                    case (byte) 0xA2://PVCs  统计个数
+                    case 0xA2://PVCs  统计个数
                         ecg_message.PVCs = data[9] | (data[10] << 8);
                         break;
-                    case (byte) 0xB0://体温数据包
+                    case 0xB0://体温数据包
                         float tempData1 = (data[9] | (data[10] << 8)) / 10f;
                         float tempData2 = (data[11] | (data[12] << 8)) / 10f;
                         ecg_data.Data_Temp1 = tempData1;
@@ -716,7 +746,7 @@ public class Monitor {
             case 0x02://NiBP
                 //<editor-fold desc="NiBP">
                 switch (data[4]) {
-                    case (byte) 0x80://通用命令应答包
+                    case 0x80://通用命令应答包
                         //<editor-fold desc="通用命令应答">
                         switch (data[9]) {
                             case 0x01:
@@ -749,10 +779,11 @@ public class Monitor {
                         }
                         //</editor-fold>
                         break;
-                    case (byte) 0x81://上电握手请求数据
-                        //SendCmd(Bp_Handshake, cmdPort);
+                    case 0x81://上电握手请求数据
+                        MainActivity.send(Directive.Bp_Handshake);
+                        //Log.e("bp","bpp");
                         break;
-                    case (byte) 0x82://模块信息应答数据
+                    case 0x82://模块信息应答数据
                         //<editor-fold desc="模块信息">
                         int a1 = data[9];//软件主版本号
                         int a2 = data[10];//软件子版本号
@@ -775,7 +806,7 @@ public class Monitor {
                         int watchdogis = data[19] >> 7 & 0x01; //1 表示看门狗自检结果有效，0 表示看门狗自检结果无效
                         //</editor-fold>
                         break;
-                    case (byte) 0x83://测试结果和状态应答数据包
+                    case 0x83://测试结果和状态应答数据包
                         //<editor-fold desc="测试结果和状态">
                         bp_info.Bp_H = (data[9] | (data[10] << 8));//收缩压
                         bp_info.Bp_L = (data[11] | (data[12] << 8));//舒张压
@@ -922,7 +953,7 @@ public class Monitor {
 
                         //</editor-fold>
                         break;
-                    case (byte) 0x84://实时袖带压数据包
+                    case 0x84://实时袖带压数据包
                         bp_info.Cuff_Pressure = (data[9] | (data[10] << 8));//袖带压力值
                         //Console.WriteLine(cuff_Pressure);
                         switch (data[11])//袖带类型错误标志
@@ -954,7 +985,7 @@ public class Monitor {
                         }
                         bp_info.System_state = system;
                         break;
-                    case (byte) 0x86://测量开始或停止通知数据包
+                    case 0x86://测量开始或停止通知数据包
                         String bp_test_type = "";
                         switch (data[9]) {
                             case 0x00:
@@ -987,7 +1018,7 @@ public class Monitor {
                         }
                         bp_info.Test_state = bp_test_state;
                         break;
-                    case (byte) 0x87://心跳标志数据包
+                    case 0x87://心跳标志数据包
                         //当检测到一次完整的脉搏波时发送心跳标志数据包
                         break;
                 }
@@ -996,7 +1027,7 @@ public class Monitor {
             case 0x03://SpO2
                 //<editor-fold desc="SpO2">
                 switch (data[4]) {
-                    case (byte) 0x80://通用命令应答包
+                    case 0x80://通用命令应答包
                         //<editor-fold desc="通用命令应答">
                         switch (data[9]) {
                             case 0x01:
@@ -1029,9 +1060,10 @@ public class Monitor {
                         }
                         //</editor-fold>
                         break;
-                    case (byte) 0x81://上电握手请求数据
+                    case 0x81://上电握手请求数据
+                        MainActivity.send(Directive.SpO2_Handshake);
                         break;
-                    case (byte) 0x82://模块信息应答数据
+                    case 0x82://模块信息应答数据
                         //<editor-fold desc="模块信息">
                         int a1 = data[9];//软件主版本号
                         int a2 = data[10];//软件子版本号
@@ -1044,18 +1076,18 @@ public class Monitor {
                         int a9 = data[17];//协议修订版本号
                         //</editor-fold>
                         break;
-                    case (byte) 0x83://模块自检结果
+                    case 0x83://模块自检结果
                         int ROM = data[9] & 0x01;
                         int RAM = data[9] >> 1 & 0x01;
                         int CPU = data[9] >> 2 & 0x01;
                         int AD = data[9] >> 3 & 0x01;
                         int WD = data[9] >> 4 & 0x01;
                         break;
-                    case (byte) 0x84://实时波形数据包
-                        if (data[9] != (byte) 0xFF)
-                            spo2_Curve.add((int) data[9]);//脉搏波形数据 数据范围为 0～100，无效值为 0xFF
-                        else
-                            spo2_Curve.add(2);
+                    case 0x84://实时波形数据包
+                        if (data[9] != 0xFF)
+                            spo2_Curve.add(data[9]);//脉搏波形数据 数据范围为 0～100，无效值为 0xFF
+//                        else
+//                            spo2_Curve.add(2);
                         switch (data[10])//脉搏音标记
                         {
                             case 0x00://无脉搏音
@@ -1067,7 +1099,7 @@ public class Monitor {
                         }
                         spo2_data.Pi = data[11]; //棒图数据 数据范围为 0～15
                         break;
-                    case (byte) 0x85://计算结果及状态信息数据包
+                    case 0x85://计算结果及状态信息数据包
                         spo2_data.Pulse_Value = data[9] | (data[10] << 8);//脉率  脉率值有效范围为 18～300，无效值为 0x1FF
                         spo2_data.Spo2_Value = data[11];//动脉氧饱和度 动脉氧饱和度有效范围为 0～100，无效值为 0x7F
                         spo2_data.Signal = (data[12] | (data[13] << 8)) / 1000f; //信号强度指数 信号强度指数范围为 0～20，上传时数据扩大了 1000 倍
@@ -1083,17 +1115,17 @@ public class Monitor {
                         } else if ((data[14] >> 4 & 0x1) == 1) {
                             spo2_data.State = "搜索脉搏波时间过长/无脉搏波";
                         } else if ((data[14] >> 5 & 0x1) == 1) {
-                            spo2_data.State = "探头未接";
+                            spo2_data.State = "血氧探头未接";
                         } else if ((data[14] >> 6 & 0x1) == 1) {
-                            spo2_data.State = "手指未接入";
+                            spo2_data.State = "血氧指夹空";
                         } else if ((data[14] >> 7 & 0x1) == 1) {
-                            spo2_data.State = "探头故障";
+                            spo2_data.State = "血氧探头故障";
                         } else if ((data[15] & 0x1) == 1) {
-                            spo2_data.State = "硬件故障";
+                            spo2_data.State = "血氧硬件故障";
                         } else if ((data[15] >> 1 & 0x1) == 1) {
-                            spo2_data.State = "背景光太强";
+                            spo2_data.State = "血氧背景光太强";
                         } else if ((data[15] >> 2 & 0x1) == 1) {
-                            spo2_data.State = "探头不匹配";
+                            spo2_data.State = "血氧探头不匹配";
                         } else {
                             spo2_data.State = "";
                         }
@@ -1203,13 +1235,14 @@ public class Monitor {
         public List<Integer> HR_V1 = new ArrayList<>();
         public List<Integer> HR_RESP = new ArrayList<>();
 
-        public void Clear() {
+        void Clear() {
             HR_I.clear();
             HR_II.clear();
             HR_V1.clear();
             HR_RESP.clear();
         }
     }
+
     /**
      * 心电数据类
      */
@@ -1264,7 +1297,7 @@ public class Monitor {
     }
 
     /**
-     * 血氧信息类
+     * 血压信息类
      */
     public class Bp_Info {
         public int Bp_H;        //收缩压

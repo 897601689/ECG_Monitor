@@ -11,6 +11,7 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Region;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -40,15 +41,23 @@ public class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback
 
     private float curve = -1;//数据
     private String info = "";//导联
-    private int backColor = Color.rgb(202, 204, 202);//背景颜色
+    // private int backColor = Color.rgb(202, 204, 202);//背景颜色
+    private int backColor = Color.TRANSPARENT;//背景颜色
     private int pen = Color.rgb(255, 0, 0);//画笔颜色
     private int textSize = 14;//字体大小
-    private int amplitude = 25;//幅值长度
+    private int amplitude = 0;//幅值长度
     private int max = 150; //曲线最大值
     private int mCurveType = 0;//0 线 1填充
+    private int time = 0;//时间刻度 总时长默认13秒
+
+    public void setTime(int time) {
+        this.time = time;
+    }
+
 
     /**
      * 111111
+     *
      * @param mCurveType
      */
     public void setmCurveType(int mCurveType) {
@@ -125,10 +134,10 @@ public class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback
         mPaint.setColor(pen);
         mPaint.setAntiAlias(true);          //防锯齿
         mPaint.setDither(true);            //防抖动
-        mPaint.setStyle(Paint.Style.FILL);//画笔类型 STROKE空心 FILL 实心
-        mPaint.setStrokeWidth(2); // 设置画笔宽度
-        mPaint.setStrokeCap(Paint.Cap.ROUND); // 设置转弯处为圆角
-        mPaint.setStrokeJoin(Paint.Join.ROUND);//结合处为圆角
+        //mPaint.setStyle(Paint.Style.FILL);//画笔类型 STROKE空心 FILL 实心
+        //mPaint.setStrokeWidth(2); // 设置画笔宽度
+        //mPaint.setStrokeCap(Paint.Cap.ROUND); // 设置转弯处为圆角
+        //mPaint.setStrokeJoin(Paint.Join.ROUND);//结合处为圆角
     }
 
     /**
@@ -172,7 +181,7 @@ public class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback
             drawCurve();
             Thread.sleep(1000);
             while (mIsDrawing) {
-                //Thread.sleep(50);
+                Thread.sleep(10);
                 drawCurve();
             }
         } catch (InterruptedException e) {
@@ -201,16 +210,22 @@ public class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback
                     mCanvas.drawLine(x, yy1, x + 1, getHeight(), mPaint);
                     mCanvas.drawLine(x, yy2, x + 1, getHeight(), mPaint);
                 }
-
-                mCanvas.drawText(info, 20, 30, mPaint);
+                if (!("").equals(info))
+                    mCanvas.drawText(info, 20, 30, mPaint);
                 if (amplitude != 0) {
                     mCanvas.drawLine(getWidth() - 30, ((getHeight() - amplitude) / 2), getWidth() - 30, ((getHeight() - amplitude) / 2) + amplitude, mPaint);
                 }//Log.e(y+" "+yy1,y2+" "+yy2);
+                if (time > 0) {
+                    //画时间刻度
+                    for (int i = 1; i <= time; i++) {
+                        mCanvas.drawLine((getWidth() / time) * i, 0, (getWidth() / time) * i, 5, mPaint);
+                    }
+                }
                 y = y2;
                 if (x > getWidth())
                     x = 0;
                 else
-                    x ++;
+                    x++;
             } else {
                 //mCanvas = mSurfaceHolder.lockCanvas();
                 //mCanvas.drawColor(backColor);
@@ -218,6 +233,12 @@ public class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback
                 mCanvas.drawText(info, 20, 30, mPaint);
                 if (amplitude != 0) {
                     mCanvas.drawLine(getWidth() - 30, ((getHeight() - amplitude) / 2), getWidth() - 30, ((getHeight() - amplitude) / 2) + amplitude, mPaint);
+                }
+                if (time > 0) {
+                    //画时间刻度
+                    for (int i = 1; i <= time; i++) {
+                        mCanvas.drawLine((getWidth() / time) * i, 0, (getWidth() / time) * i, 5, mPaint);
+                    }
                 }
             }
         } catch (Exception e) {

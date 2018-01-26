@@ -20,27 +20,27 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
-            <util.MySurfaceView
+            <widgets.MySurfaceView
                 android:id="@+id/ecg_Curve1"
                 android:layout_width="724dp"
                 android:layout_height="154dp" />
 
-            <util.MySurfaceView
+            <widgets.MySurfaceView
                 android:id="@+id/ecg_Curve2"
                 android:layout_width="724dp"
                 android:layout_height="154dp" />
 
-            <util.MySurfaceView
+            <widgets.MySurfaceView
                 android:id="@+id/ecg_Curve3"
                 android:layout_width="724dp"
                 android:layout_height="154dp" />
 
-            <util.MySurfaceView
+            <widgets.MySurfaceView
                 android:id="@+id/spo2_Curve"
                 android:layout_width="724dp"
                 android:layout_height="154dp" />
 
-            <util.MySurfaceView
+            <widgets.MySurfaceView
                 android:id="@+id/resp_Curve"
                 android:layout_width="724dp"
                 android:layout_height="154dp" />
@@ -66,7 +66,7 @@
                     android:layout_weight="1"
                     android:background="#00f"
                     android:gravity="center"
-                    android:textSize="25sp" />
+                    android:textSize="22sp" />
 
                 <TextView
                     android:id="@+id/txt_bio_alarm"
@@ -75,7 +75,7 @@
                     android:layout_weight="1"
                     android:background="#ff0"
                     android:gravity="center"
-                    android:textSize="25sp" />
+                    android:textSize="22sp" />
             </LinearLayout>
             <!--体温-->
             <LinearLayout
@@ -297,7 +297,7 @@
                     <TextView
                         android:id="@+id/txt_spo2"
                         style="@style/main_txt_value"
-                        android:ems="1"
+                        android:ems="2"
                         android:text="--"
                         android:textColor="#FFFFFF"
                         android:textSize="50sp" />
@@ -325,7 +325,7 @@
                     <TextView
                         android:id="@+id/txt_pulse"
                         style="@style/main_txt_value"
-                        android:ems="1"
+                        android:ems="2"
                         android:text="--"
                         android:textColor="#FFFFFF"
                         android:textSize="50sp" />
@@ -396,7 +396,7 @@
                     <TextView
                         android:id="@+id/txt_resp"
                         style="@style/main_txt_value"
-                        android:ems="1"
+                        android:ems="2"
                         android:text="--"
                         android:textColor="#FFFFFF"
                         android:textSize="50sp" />
@@ -424,7 +424,7 @@
                     <TextView
                         android:id="@+id/txt_temp"
                         style="@style/main_txt_value"
-                        android:ems="1"
+                        android:ems="2"
                         android:text="--"
                         android:textColor="#FFFFFF"
                         android:textSize="50sp" />
@@ -441,7 +441,7 @@
                 android:layout_marginTop="1dp"
                 android:background="#000"
                 android:gravity="center"
-                android:text="2017-11-22 15:36:20"
+                android:text="2017年11月22日15时36分"
                 android:textColor="#fff"
                 android:textSize="20sp" />
         </LinearLayout>
