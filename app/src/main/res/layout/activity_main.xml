@@ -77,7 +77,7 @@
                     android:gravity="center"
                     android:textSize="22sp" />
             </LinearLayout>
-            <!--体温-->
+            <!--心电-->
             <LinearLayout
                 android:layout_width="300dp"
                 android:layout_height="165dp"
@@ -138,7 +138,7 @@
 
 
             </LinearLayout>
-            <!--体温-->
+            <!--血压-->
             <LinearLayout
                 android:layout_width="300dp"
                 android:layout_height="165dp"
@@ -235,7 +235,7 @@
 
 
             </LinearLayout>
-            <!--体温-->
+            <!--血氧/脉率-->
             <LinearLayout
                 android:layout_width="300dp"
                 android:layout_height="165dp"
@@ -334,7 +334,7 @@
 
 
             </LinearLayout>
-            <!--体温-->
+            <!--呼吸/体温-->
             <LinearLayout
                 android:layout_width="300dp"
                 android:layout_height="165dp"
@@ -396,7 +396,7 @@
                     <TextView
                         android:id="@+id/txt_resp"
                         style="@style/main_txt_value"
-                        android:ems="2"
+                        android:ems="3"
                         android:text="--"
                         android:textColor="#FFFFFF"
                         android:textSize="50sp" />
@@ -424,7 +424,7 @@
                     <TextView
                         android:id="@+id/txt_temp"
                         style="@style/main_txt_value"
-                        android:ems="2"
+                        android:ems="3"
                         android:text="--"
                         android:textColor="#FFFFFF"
                         android:textSize="50sp" />

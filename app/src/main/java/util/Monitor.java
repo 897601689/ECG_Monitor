@@ -124,6 +124,10 @@ public class Monitor {
     private Bp_Info bp_info = new Bp_Info();
 
 
+    List<int[]> AllDaata = new ArrayList<>();
+
+    List<Integer> allnum = new ArrayList<>();
+
     //将有符号数转换为整形
     public int getUnsignedByte(byte data) {
         return data & 0x0ff;
@@ -151,7 +155,7 @@ public class Monitor {
                 }
             }
         }
-        //buffer.clear();
+        buffer.clear();
         //Log.e("buffer", "" + buffer.size());
     }
 
@@ -493,10 +497,8 @@ public class Monitor {
                         hrCurve.HR_RESP.add(hr_r);          //呼吸波形
                         break;
                     case 0x91://心率/呼吸率数据 如果上传结果为-100，表示未计算得到结果，为无效值 FF9C
-                        int hr = data[9] | (data[10] << 8);//心率 15~300
-                        ecg_data.Data_Hr = hr;
-                        int rr = data[11] | (data[12] << 8);//呼吸率 15~200
-                        ecg_data.Data_Resp = rr;
+                        ecg_data.Data_Hr = data[9] | (data[10] << 8);
+                        ecg_data.Data_Resp = data[11] | (data[12] << 8);
                         break;
                     case 0x92://心电导联状态数据包 '1' 有效
                         //<editor-fold desc="心电导联状态">

@@ -124,9 +124,6 @@ public class MainActivity extends Activity {
     static int loadId;
     //</editor-fold>
 
-    //<editor-fold desc="网络">
-    //Socket套接字
-    private Socket socket = null;
     public static String ip = "10.10.100.254";    //服务器IP
     //服务器端口
     private static final int SERVER_PORT = 8899;
@@ -179,7 +176,7 @@ public class MainActivity extends Activity {
 
         ecgCurve1.setPen(Color.rgb(50, 255, 50));//设置曲线颜色
         ecgCurve1.setInfo("I");
-        ecgCurve1.setAmplitude(15);
+        ecgCurve1.setAmplitude(20);
         ecgCurve1.setMax(4096);
         ecgCurve1.setTime(13);
 
@@ -207,6 +204,8 @@ public class MainActivity extends Activity {
         ip = read.getString("IP", ip);
 
         new Thread(new AlarmAndTime()).start();
+        new Thread(new DrawImage()).start();
+
         monitorData = new MonitorData();
         new Thread(monitorData).start();
 
@@ -1017,11 +1016,12 @@ public class MainActivity extends Activity {
 
         @Override
         public void run() {
-            while (true) {
-                try {
-                    Thread.sleep(10);
+            try {
+                Thread.sleep(1000);
+                while (true) {
+                    Thread.sleep(200);
                     if (!socketStatus) {
-                        socket = new Socket(ip, SERVER_PORT);
+                        Socket socket = new Socket(ip, SERVER_PORT);
                         outputStream = socket.getOutputStream();
                         inputStream = socket.getInputStream();
                         socketStatus = true;
@@ -1030,36 +1030,120 @@ public class MainActivity extends Activity {
                         send(Directive.Bp_Handshake);
                         send(Directive.SpO2_Handshake);
                     }
+                    //Log.e("inputStream", " " + inputStream.available());
                     if (inputStream.available() > 0) {
                         bytes = new byte[inputStream.available()];
-                        int num = inputStream.read(bytes);
-
-                        monitor.CmdParser(bytes);
-                        Monitor.Hr_Curve hr_curve = monitor.getHrCurve();
-                        if (hr_curve.HR_I.size() > 0) {
-                            for (int i = 0; i < hr_curve.HR_I.size(); i+=1) {
-                                ecgCurve1.setCurve(hr_curve.HR_I.get(i));
-                                ecgCurve2.setCurve(hr_curve.HR_II.get(i));
-                                ecgCurve3.setCurve(hr_curve.HR_V1.get(i));
-                                respCurve.setCurve(hr_curve.HR_RESP.get(i));
-                                //Log.e(i + " num", String.valueOf(hr_curve.HR_RESP.get(i)));
-                            }
-
+                        inputStream.read(bytes);
+                        // String TmpStr = new String(bytes, "gb2312");
+                        synchronized (this) {
+                            monitor.CmdParser(bytes);
                         }
-
-                        if (monitor.getSpo2_Curve().size() > 0) {
-                            for (int i : monitor.getSpo2_Curve()) {
-                                spo2Curve.setCurve(i);
-                            }
-                        }
-                        String TmpStr = new String(bytes, "gb2312");
 
                         mHandler.sendEmptyMessage(0x02);
                     }
-
-                } catch (Exception e) {
-                    e.printStackTrace();
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+    private class DrawImage implements Runnable {
+
+        @Override
+        public void run() {
+            try {
+                Thread.sleep(2000);
+                while (true) {
+                    Thread.sleep(5);
+                    synchronized (this) {
+                        final Monitor.Hr_Curve hr_curve = monitor.getHrCurve();
+                        List<Integer> data_spo2 = monitor.getSpo2_Curve();
+                        if (hr_curve.HR_I.size() > 0) {
+                            List<Integer> data_HR_I = hr_curve.HR_I;
+                            List<Integer> data_HR_II = hr_curve.HR_II;
+                            List<Integer> data_HR_V = hr_curve.HR_V1;
+                            List<Integer> data_HR_Resp = hr_curve.HR_RESP;
+
+                            for (int i = 0; i < data_HR_I.size() / 2; i++) {
+                                Thread.sleep(5);
+                                if (i * 2 < data_HR_I.size()) {
+                                    if (data_HR_I != null)
+                                        ecgCurve1.setCurve(data_HR_I.get(i * 2));
+                                    if (data_HR_II != null)
+                                        ecgCurve2.setCurve(data_HR_II.get(i * 2));
+                                    if (data_HR_V != null)
+                                        ecgCurve3.setCurve(data_HR_V.get(i * 2));
+                                    //respCurve.setCurve(data_HR_Resp.get(i*3));
+                                }
+                                if (i * 3 < data_HR_Resp.size())
+                                    if (data_HR_Resp != null)
+                                        respCurve.setCurve(data_HR_Resp.get(i * 3));
+                                if (i < data_spo2.size())
+                                    if (data_spo2 != null)
+                                        spo2Curve.setCurve(data_spo2.get(i));
+                            }
+
+                        }
+
+                    }
+
+//                    List<Integer> data_HR_I = hr_curve.HR_I;
+//                    if (data_HR_I.size() > 0) {
+//                        for (int i = 0; i < data_HR_I.size(); i++) {
+//                            //Thread.sleep(10);
+//                            ecgCurve1.setCurve(data_HR_I.get(i));
+//                        }
+//                    } else {
+//                        ecgCurve1.setCurve(-1);
+//                    }
+//
+//                    List<Integer> data_HR_II = hr_curve.HR_II;
+//                    if (data_HR_II.size() > 0) {
+//                        for (int i : data_HR_II) {
+//                            //Thread.sleep(10);
+//                            ecgCurve2.setCurve(i);
+//                        }
+//                    } else {
+//                        ecgCurve2.setCurve(-1);
+//                    }
+//
+//                    List<Integer> data_HR_V = hr_curve.HR_V1;
+//                    if (data_HR_V.size() > 0) {
+//                        for (int i : data_HR_V) {
+//                            //Thread.sleep(10);
+//                            ecgCurve3.setCurve(i);
+//                        }
+//                    } else {
+//                        ecgCurve3.setCurve(-1);
+//                    }
+//
+//                    List<Integer> data_HR_Resp = hr_curve.HR_RESP;
+//                    if (data_HR_Resp.size() > 0) {
+//                        for (int i : data_HR_Resp) {
+//                            Thread.sleep(10);
+//                            respCurve.setCurve(i);
+//                        }
+//                    } else {
+//                        respCurve.setCurve(-1);
+//                    }
+
+//                    List<Integer> data_spo2 = monitor.getSpo2_Curve();
+//
+//                    if (data_spo2.size() > 0) {
+//                        for (int i = 0; i < data_spo2.size(); i++) {
+//                            Thread.sleep(10);
+//                            if (i < data_spo2.size())
+//                                spo2Curve.setCurve(data_spo2.get(i));
+//                        }
+//                    } else {
+//                        spo2Curve.setCurve(-1);
+//                    }
+                }
+
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
     }
@@ -1183,7 +1267,7 @@ public class MainActivity extends Activity {
     private static void AlarmVoice() {
         soundPool.play(loadId, 1, 1, 1, 0, 1f);
     }
-    //</editor-fold>
+//</editor-fold>
 
     private class MyHandler extends Handler {
         //注意下面的“MainActivity”类是MyHandler类所在的外部类，即所在的activity
@@ -1279,6 +1363,7 @@ public class MainActivity extends Activity {
                     break;
             }
         }
+
     }
 
 

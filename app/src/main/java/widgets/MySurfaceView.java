@@ -134,8 +134,9 @@ public class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback
         mPaint.setColor(pen);
         mPaint.setAntiAlias(true);          //防锯齿
         mPaint.setDither(true);            //防抖动
+
         //mPaint.setStyle(Paint.Style.FILL);//画笔类型 STROKE空心 FILL 实心
-        //mPaint.setStrokeWidth(2); // 设置画笔宽度
+        mPaint.setStrokeWidth(2); // 设置画笔宽度
         //mPaint.setStrokeCap(Paint.Cap.ROUND); // 设置转弯处为圆角
         //mPaint.setStrokeJoin(Paint.Join.ROUND);//结合处为圆角
     }
@@ -199,8 +200,8 @@ public class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback
             mCanvas.drawColor(backColor, PorterDuff.Mode.CLEAR);
             //curve为-1时数据无效
             if (curve != -1) {
-
                 float y2 = curve;
+                curve = -1;
                 float yy1 = getHeight() - (getHeight() * y / max);
                 float yy2 = getHeight() - (getHeight() * y2 / max);
 
@@ -227,8 +228,8 @@ public class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback
                 else
                     x++;
             } else {
-                //mCanvas = mSurfaceHolder.lockCanvas();
-                //mCanvas.drawColor(backColor);
+//                //mCanvas = mSurfaceHolder.lockCanvas();
+//                //mCanvas.drawColor(backColor);
                 mPaint.setTextSize(textSize);
                 mCanvas.drawText(info, 20, 30, mPaint);
                 if (amplitude != 0) {
