@@ -387,7 +387,7 @@ public class MainActivity extends Activity {
 
                                         start_detect.setOnClickListener(new Button.OnClickListener() {//创建监听
                                             public void onClick(View v) {
-                                                send(new byte[0]);
+                                                send(Directive.Bp_Leak);
 
                                             }
 
@@ -398,7 +398,7 @@ public class MainActivity extends Activity {
                                         selfdialog.setButton("取消", new DialogInterface.OnClickListener() {
                                             @Override
                                             public void onClick(final DialogInterface dialog, final int which) {
-                                                send(new byte[0]);
+                                                send(Directive.Bp_Stop);
                                                 selfdialog.cancel();
                                             }
                                         });
@@ -406,7 +406,7 @@ public class MainActivity extends Activity {
 
                                             @Override
                                             public void onClick(DialogInterface dialog, int which) {
-                                                send(new byte[0]);
+
                                                 selfdialog.cancel();
                                             }
                                         });
@@ -419,11 +419,10 @@ public class MainActivity extends Activity {
 
 
                                         selfdialog = ad.create();
-                                        send(new byte[0]);
                                         selfdialog.setButton("取消", new DialogInterface.OnClickListener() {
                                             @Override
                                             public void onClick(final DialogInterface dialog, final int which) {
-                                                send(new byte[0]);
+                                                send(Directive.Bp_Stop);
                                                 selfdialog.cancel();
                                             }
                                         });
@@ -431,7 +430,7 @@ public class MainActivity extends Activity {
 
                                             @Override
                                             public void onClick(DialogInterface dialog, int which) {
-                                                send(new byte[0]);
+                                                send(Directive.Bp_Cal);
                                                 selfdialog.cancel();
                                             }
                                         });
@@ -865,11 +864,11 @@ public class MainActivity extends Activity {
                                                 byte[] data1 = Directive.Bp_S_Pressur;
                                                 byte[] data2 = Directive.Bp_S_Pressur;
                                                 byte[] data3 = Directive.Bp_S_Pressur;
-                                                data1[8] = (byte) Integer.parseInt(cr_prefill_param.getText().toString());
+                                                data1[8] = (byte) ((Integer.parseInt(cr_prefill_param.getText().toString()) - 60) / 10);
                                                 data1[9] = (byte) monitor.CheckNum(data1);
-                                                data2[8] = (byte) Integer.parseInt(et_prefill_param.getText().toString());
+                                                data2[8] = (byte) ((Integer.parseInt(et_prefill_param.getText().toString()) - 60) / 10);
                                                 data2[9] = (byte) monitor.CheckNum(data2);
-                                                data3[8] = (byte) Integer.parseInt(ye_prefill_param.getText().toString());
+                                                data3[8] = (byte) ((Integer.parseInt(ye_prefill_param.getText().toString()) - 60) / 10);
                                                 data3[9] = (byte) monitor.CheckNum(data3);
                                                 //发送命令
                                                 monitorData.send(data1);
