@@ -17,7 +17,7 @@ import java.util.List;
  * Created by YF on 2017/11/17.
  */
 
-public class Monitor {
+public class Monitor{
 
     private String TAG = "Monitor_Message";
 
@@ -143,6 +143,7 @@ public class Monitor {
         for (byte aByte : bytes) {
             buffer.add(getUnsignedByte(aByte));
         }
+        //Log.e("1buffer1", "" + buffer.size());
         for (int i = 0; i < buffer.size(); i++) {
             if (buffer.get(i) == 0xFA) {
                 if (buffer.size() - i >= 10) {
@@ -155,10 +156,37 @@ public class Monitor {
                 }
             }
         }
+        //Log.e("2buffer2", "" + buffer.size());
         buffer.clear();
         //Log.e("buffer", "" + buffer.size());
     }
+    public void CmdParser(List<Byte> bytes) {
+        if (bytes == null)
+            return;
+        hrCurve.Clear();
+        spo2_Curve.clear();
+        //buffer.clear();
 
+        for (byte aByte : bytes) {
+            buffer.add(getUnsignedByte(aByte));
+        }
+        //Log.e("1buffer1", "" + buffer.size());
+        for (int i = 0; i < buffer.size(); i++) {
+            if (buffer.get(i) == 0xFA) {
+                if (buffer.size() - i >= 10) {
+                    data = GetData(i, buffer.get(i + 1) & 0x0ff, buffer);//buffer.get(i + 1) 此数据包的长度
+                    if (data != null && data.length != 0) {
+                        i--;
+                        if (IsCheckCmd(data))
+                            Parser(data);//解析
+                    }
+                }
+            }
+        }
+        //Log.e("2buffer2", "" + buffer.size());
+        buffer.clear();
+        //Log.e("buffer", "" + buffer.size());
+    }
     /**
      * 获取命令数组
      *
@@ -1088,8 +1116,8 @@ public class Monitor {
                     case 0x84://实时波形数据包
                         if (data[9] != 0xFF)
                             spo2_Curve.add(data[9]);//脉搏波形数据 数据范围为 0～100，无效值为 0xFF
-//                        else
-//                            spo2_Curve.add(2);
+                        else
+                            spo2_Curve.add(2);
                         switch (data[10])//脉搏音标记
                         {
                             case 0x00://无脉搏音

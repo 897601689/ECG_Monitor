@@ -34,7 +34,7 @@ public class SplashActivity extends Activity {
                 startActivity(it);
                 finish();
             }
-        }, 100 * 2);
+        }, 1000 * 2);
     }
 
     private void hideSystemUIMenu() {
