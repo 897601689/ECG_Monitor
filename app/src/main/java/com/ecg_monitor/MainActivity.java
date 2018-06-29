@@ -123,6 +123,7 @@ public class MainActivity extends Activity {
     //<editor-fold desc="播放报警音">
     static SoundPool soundPool;
     static int loadId;
+    static int loadId2;
     //</editor-fold>
 
     public static String ip = "10.10.100.254";    //服务器IP
@@ -179,7 +180,7 @@ public class MainActivity extends Activity {
         ecgCurve1.setInfo("I");
         ecgCurve1.setAmplitude(45);
         ecgCurve1.setMax(4096);
-        ecgCurve1.setTime(9);
+        ecgCurve1.setTime(6);
 
         ecgCurve2.setPen(Color.rgb(50, 255, 50));//设置曲线颜色
         ecgCurve2.setInfo("II");
@@ -201,8 +202,11 @@ public class MainActivity extends Activity {
         //获取IP地址
         SharedPreferences read = getSharedPreferences("setting", MODE_PRIVATE);
         ip = read.getString("IP", ip);
+
         soundPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 100);
         loadId = soundPool.load(getBaseContext(), R.raw.venthi, 1);
+        loadId2 = soundPool.load(getBaseContext(), R.raw.ventmed, 1);
+
         new Thread(new AlarmAndTime()).start();//
 
         //new Thread(new DrawImage()).start();//
@@ -1304,13 +1308,18 @@ public class MainActivity extends Activity {
         @Override
         public void run() {
             try {
+                Thread.sleep(5000);
                 while (true) {
 
-                    if (Global.isAlarm1 || Global.isAlarm2) {
+                    if (Global.isAlarm1) {
                         //if(!Global.Mute)
                         soundPool.play(loadId, 1, 1, 1, 0, 1f);
+                        Thread.sleep(8000);
+                    }else if(Global.isAlarm2){
+                        soundPool.play(loadId2, 1, 1, 1, 0, 1f);
+                        Thread.sleep(5000);
                     }
-                    Thread.sleep(5000);
+
                 }
             } catch (InterruptedException e) {
                 new Thread(new AlarmVoice()).start();
